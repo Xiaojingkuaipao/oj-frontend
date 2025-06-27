@@ -28,7 +28,10 @@ export default {
     // 添加登出action
     async logout({ commit }) {
       try {
+        console.log("开始调用logout API...");
         const data = await UserControllerService.userLogoutUsingPost();
+        console.log("logout API响应:", data);
+
         if (data.code === 0) {
           commit("updateUser", {
             userName: "未登录",
@@ -36,10 +39,15 @@ export default {
           });
           return { success: true };
         } else {
+          console.error("logout API返回错误:", data.message);
           return { success: false, message: data.message };
         }
-      } catch (error) {
-        return { success: false, message: "退出登录失败" };
+      } catch (error: any) {
+        console.error("logout API调用异常:", error);
+        return {
+          success: false,
+          message: `退出登录失败: ${error.message || error}`,
+        };
       }
     },
   },

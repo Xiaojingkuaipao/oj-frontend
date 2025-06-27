@@ -139,12 +139,32 @@ const goUserInfo = () => {
 };
 
 const handleLogout = async () => {
-  const result = await store.dispatch("user/logout");
-  if (result.success) {
-    message.success("退出登陆成功");
-    router.push("/user/login");
-  } else {
-    message.error("退出登陆失败，" + (result.message || ""));
+  try {
+    console.log("GlobalHeader: 开始登出...");
+
+    // 添加API连通性测试
+    console.log("测试API连通性...");
+    try {
+      await store.dispatch("user/getLoginUser");
+      console.log("API连通性正常");
+    } catch (testError) {
+      console.error("API连通性测试失败:", testError);
+      message.error("无法连接到服务器，请检查网络连接");
+      return;
+    }
+
+    const result = await store.dispatch("user/logout");
+    console.log("GlobalHeader: 登出结果", result);
+
+    if (result.success) {
+      message.success("退出登陆成功");
+      router.push("/user/login");
+    } else {
+      message.error("退出登陆失败，" + (result.message || "未知错误"));
+    }
+  } catch (error) {
+    console.error("GlobalHeader: 登出异常", error);
+    message.error("退出登陆失败，系统异常");
   }
 };
 </script>
