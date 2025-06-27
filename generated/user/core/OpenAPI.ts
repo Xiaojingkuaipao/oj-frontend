@@ -20,7 +20,7 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-    BASE: 'http://59d37608.r38.cpolar.top',
+    BASE: 'http://192.168.65.34:8101',
     VERSION: '1.0',
     WITH_CREDENTIALS: true,
     CREDENTIALS: 'include',

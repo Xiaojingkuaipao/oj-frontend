@@ -209,8 +209,8 @@ questionQueryRequest: QuestionQueryRequest,
      * @throws ApiError
      */
     public static doSubmitUsingPost(
-questionSubmitAddRequest: QuestionSubmitAddRequest,
-): CancelablePromise<BaseResponse_long_ | any> {
+        questionSubmitAddRequest: QuestionSubmitAddRequest,
+    ): CancelablePromise<BaseResponse_long_ | any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/question/submit/do',

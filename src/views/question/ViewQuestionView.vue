@@ -137,6 +137,7 @@ const onEditChange = (v: string) => {
 const doSubmit = async () => {
   console.log("提交的代码：", form.value);
   const res = await QuestionControllerService.doSubmitUsingPost(form.value);
+  console.log("res:", res);
   if (res.code === 0) {
     message.success("提交成功");
   } else {
