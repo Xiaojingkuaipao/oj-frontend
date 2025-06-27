@@ -50,12 +50,13 @@ const router = useRouter();
 const handleSubmit = async () => {
   const res = await UserControllerService.userLoginUsingPost(form);
   if (res.code === 0) {
-    await store.dispatch("user/getLoginUser");
+    // 直接使用登录响应的用户数据更新store
+    store.commit("user/updateUser", res.data);
+    message.success("登陆成功");
     router.push({
       path: "/",
       replace: true,
     });
-    message.success("登陆成功");
   } else {
     message.error("登陆失败, " + res.message);
     console.log(res.message);

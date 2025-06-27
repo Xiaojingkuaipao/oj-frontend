@@ -6,8 +6,12 @@ import AccessEnum from "@/access/accessEnum";
 router.beforeEach(async (to, from, next) => {
   //判断是否登陆
   let loginUser = store.state.user.loginUser;
-  //之前已经登陆过了，每次请求都去后端重新获取用户信息
-  if (!loginUser || !loginUser.userRole) {
+  //如果用户信息为空或者userRole为undefined或者为NOT_LOGIN，则重新获取用户信息
+  if (
+    !loginUser ||
+    !loginUser.userRole ||
+    loginUser.userRole === AccessEnum.NOT_LOGIN
+  ) {
     //加async 与await 表示这个请求为同步请求，请求成功后，再去执行下面的代码
     await store.dispatch("user/getLoginUser");
     loginUser = store.state.user.loginUser;

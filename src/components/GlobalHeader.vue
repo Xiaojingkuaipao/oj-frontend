@@ -34,16 +34,13 @@
       </a-col>
       <a-col flex="150px">
         <a-dropdown-button>
-          {{ store.state.user?.loginUser?.userName ?? "未登录" }}
+          {{ displayUserName }}
           <template #icon>
             <icon-down />
           </template>
           <template #content>
             <a-doption style="padding: 0 15px">
-              <div
-                v-if="store.state.user?.loginUser?.userName"
-                @click="handleLogout"
-              >
+              <div v-if="isLoggedIn" @click="handleLogout">
                 <icon-import />
                 退出登陆
               </div>
@@ -85,15 +82,26 @@ import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import checkAccess from "@/access/checkAccess";
 import "@/access";
-import { UserControllerService } from "../../generated/user";
 import message from "@arco-design/web-vue/es/message";
 
 const router = useRouter();
 const selectKeys = ref(["/"]);
 const store = useStore();
+
+// 计算用户是否已登录
+const isLoggedIn = computed(() => {
+  const userRole = store.state.user?.loginUser?.userRole;
+  return userRole && userRole !== "notLogin";
+});
+
+// 计算显示的用户名
+const displayUserName = computed(() => {
+  return isLoggedIn.value ? store.state.user?.loginUser?.userName : "未登录";
+});
+
 //展示在菜单的路由
 const visibleRoutes = computed(() => {
-  return routes.filter((item, index) => {
+  return routes.filter((item) => {
     if (item.meta?.hideInMenu) {
       return false;
     }
@@ -104,7 +112,7 @@ const visibleRoutes = computed(() => {
   });
 });
 
-router.afterEach((to, form, failure) => {
+router.afterEach((to) => {
   selectKeys.value = [to.path];
 });
 const doMenuClick = (key: string) => {
@@ -131,12 +139,12 @@ const goUserInfo = () => {
 };
 
 const handleLogout = async () => {
-  const data = await UserControllerService.userLogoutUsingPost();
-  if (data.data) {
+  const result = await store.dispatch("user/logout");
+  if (result.success) {
     message.success("退出登陆成功");
-    store.state.user.loginUser = undefined;
+    router.push("/user/login");
   } else {
-    message.error("退出登陆失败，" + data.message);
+    message.error("退出登陆失败，" + (result.message || ""));
   }
 };
 </script>

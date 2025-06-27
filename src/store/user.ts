@@ -8,11 +8,12 @@ export default {
   state: () => ({
     loginUser: {
       userName: "未登录",
-      //userRole设为undefined来区分用户是否已经登陆过了，登陆过以后userRole一定有值
+      userRole: AccessEnum.NOT_LOGIN,
+      //初始设为NOT_LOGIN状态，登录成功后userRole会更新为具体权限
     },
   }),
   actions: {
-    async getLoginUser({ commit, state }, user) {
+    async getLoginUser({ commit, state }) {
       //从远程获取登陆信息
       const res = await UserControllerService.getLoginUserUsingGet();
       if (res.code === 0) {
@@ -22,6 +23,23 @@ export default {
           ...state.loginUser,
           userRole: AccessEnum.NOT_LOGIN,
         });
+      }
+    },
+    // 添加登出action
+    async logout({ commit }) {
+      try {
+        const data = await UserControllerService.userLogoutUsingPost();
+        if (data.code === 0) {
+          commit("updateUser", {
+            userName: "未登录",
+            userRole: AccessEnum.NOT_LOGIN,
+          });
+          return { success: true };
+        } else {
+          return { success: false, message: data.message };
+        }
+      } catch (error) {
+        return { success: false, message: "退出登录失败" };
       }
     },
   },
