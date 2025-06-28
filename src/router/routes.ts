@@ -13,6 +13,7 @@ import ApiDocumentView from "@/views/interface/ApiDocumentView.vue";
 import AddInterfaceView from "@/views/interface/AddInterfaceView.vue";
 import AccessEnum from "@/access/accessEnum";
 import UserLayout from "../layouts/UserLayout.vue";
+import InterView from "@/views/interview/InterView.vue";
 
 export const routes: Array<RouteRecordRaw> = [
   {
@@ -44,6 +45,11 @@ export const routes: Array<RouteRecordRaw> = [
     path: "/question_submit",
     name: "浏览提交",
     component: QuestionSubmitView,
+  },
+  {
+    path: "/AIChat",
+    name: "模拟面试",
+    component: InterView,
   },
   {
     path: "/view/question/:id",
