@@ -25,7 +25,6 @@ const store = useStore();
  *全局初始化函数，有全局单次调用的代码，都可以写到这里
  */
 const doInit = async () => {
-  console.log("OJ判题，Create By ZunF@2023");
   // 获取当前登录用户信息
   try {
     await store.dispatch("user/getLoginUser");

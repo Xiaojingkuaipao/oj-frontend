@@ -10,7 +10,7 @@
       <a-layout-content class="content">
         <router-view />
       </a-layout-content>
-      <a-layout-footer class="footer">Create By ZunF@2023</a-layout-footer>
+      <a-layout-footer class="footer">Create By CQU@2025</a-layout-footer>
     </a-layout>
   </div>
 </template>
