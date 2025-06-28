@@ -3,7 +3,7 @@
     <a-layout style="min-height: 100vh">
       <a-layout-header class="header">
         <a-space>
-          <img class="logo" src="../assets/sheep.png" />
+          <img class="logo" src="../assets/CquLogo.svg" />
           <div class="title">OJ判题系统</div>
         </a-space>
       </a-layout-header>

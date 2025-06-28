@@ -1,5 +1,5 @@
 <template>
-  {{ languageValue }}
+  {{ props.language }}
   <div id="code-editor" ref="codeEditorRef" style="min-height: 73vh" />
 </template>
 
