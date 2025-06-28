@@ -23,7 +23,7 @@
             >
               <img
                 style="height: 100%; width: 100%"
-                src="../assets/sheep.png"
+                src="../assets/CquLogo.svg"
               />
             </div>
           </a-menu-item>

@@ -3,14 +3,14 @@
     <a-layout style="min-height: 100vh">
       <a-layout-header class="header">
         <a-space>
-          <img class="logo" src="../assets/sheep.png" />
+          <img class="logo" src="../assets/CquLogo.svg" />
           <div class="title">OJ判题系统</div>
         </a-space>
       </a-layout-header>
       <a-layout-content class="content">
         <router-view />
       </a-layout-content>
-      <a-layout-footer class="footer">Create By ZunF@2023</a-layout-footer>
+      <a-layout-footer class="footer">Create By CQU@2025</a-layout-footer>
     </a-layout>
   </div>
 </template>
