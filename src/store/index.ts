@@ -1,12 +1,10 @@
 import { createStore } from "vuex";
 import user from "@/store/user";
+import match from "@/store/match";
 
 export default createStore({
-  state: {},
-  getters: {},
-  mutations: {},
-  actions: {},
   modules: {
     user,
+    match,
   },
 });
