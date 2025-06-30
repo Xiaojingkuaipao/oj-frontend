@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // initial state
-import { StoreOptions } from "vuex";
-import router from "@/router";
+import { MatchWebSocket, MatchResponse } from "@/utils/websocket";
 
 // 匹配状态枚举
 export enum MatchStatusEnum {
@@ -22,108 +22,165 @@ export default {
     currentQuestion: null,
     // 匹配结果
     matchResult: null,
-    // 模拟等待时间(毫秒)
-    waitTime: 3000,
+    // WebSocket实例
+    websocket: null as MatchWebSocket | null,
+    // 房间ID
+    roomId: null as string | null,
+    // 连接状态
+    isConnected: false,
+    // 错误信息
+    errorMessage: null as string | null,
   }),
   actions: {
-    // 开始匹配
-    async startMatching({ commit, state }) {
-      // 更新状态为匹配中
-      commit("updateMatchStatus", MatchStatusEnum.MATCHING);
-      // 模拟匹配过程 (在实际项目中，这里会调用API)
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          // 模拟匹配成功
-          const mockOpponent = {
-            id: 12345,
-            userName: "对手用户",
-            avatar: "https://via.placeholder.com/100",
-          };
-          // 模拟题目数据
-          const mockQuestion = {
-            id: 1,
-            title: "两数之和",
-            content:
-              "给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出和为目标值 target 的那两个整数，并返回它们的数组下标。",
-            difficulty: "简单",
-          };
-          commit("updateOpponent", mockOpponent);
-          commit("updateCurrentQuestion", mockQuestion);
-          commit("updateMatchStatus", MatchStatusEnum.MATCHED);
-          resolve({ success: true });
-        }, state.waitTime);
-      });
+    // 开始匹配 - 建立WebSocket连接
+    async startMatching({ commit, rootState }: any) {
+      const userName = rootState.user?.loginUser?.userName;
+      if (!userName) {
+        throw new Error("用户未登录");
+      }
+
+      try {
+        // 更新状态为匹配中
+        commit("updateMatchStatus", MatchStatusEnum.MATCHING);
+        commit("updateErrorMessage", null);
+
+        // 创建WebSocket连接
+        const websocket = new MatchWebSocket("139.9.144.238:8080", userName);
+        commit("updateWebSocket", websocket);
+
+        // 设置回调函数
+        websocket.setCallbacks({
+          onConnected: () => {
+            console.log("WebSocket连接成功，开始匹配");
+            commit("updateIsConnected", true);
+          },
+          onMatchResult: (result: MatchResponse) => {
+            console.log("收到匹配结果:", result);
+            if (result.success) {
+              // 匹配成功
+              commit("updateOpponent", {
+                id: result.userId,
+                userName: result.oppoUserName,
+                avatar: "",
+              });
+              commit("updateRoomId", result.roomId);
+              commit("updateMatchStatus", MatchStatusEnum.MATCHED);
+            } else {
+              // 匹配失败
+              commit("updateErrorMessage", result.message);
+              commit("updateMatchStatus", MatchStatusEnum.IDLE);
+            }
+          },
+          onError: (error) => {
+            console.error("WebSocket错误:", error);
+            commit("updateErrorMessage", "连接服务器失败");
+            commit("updateMatchStatus", MatchStatusEnum.IDLE);
+            commit("updateIsConnected", false);
+          },
+          onDisconnected: () => {
+            console.log("WebSocket连接断开");
+            commit("updateIsConnected", false);
+          },
+        });
+
+        // 建立连接
+        await websocket.connect();
+        return { success: true };
+      } catch (error) {
+        console.error("开始匹配失败:", error);
+        commit("updateErrorMessage", "开始匹配失败");
+        commit("updateMatchStatus", MatchStatusEnum.IDLE);
+        throw error;
+      }
     },
+
     // 取消匹配
-    cancelMatching({ commit }) {
-      commit("updateMatchStatus", MatchStatusEnum.IDLE);
-      commit("updateOpponent", null);
-      return { success: true };
+    async cancelMatching({ commit, state }: any) {
+      try {
+        if (state.websocket) {
+          state.websocket.cancelMatch();
+          state.websocket.close();
+        }
+        commit("updateMatchStatus", MatchStatusEnum.IDLE);
+        commit("updateOpponent", null);
+        commit("updateWebSocket", null);
+        commit("updateIsConnected", false);
+        commit("updateRoomId", null);
+        return { success: true };
+      } catch (error) {
+        console.error("取消匹配失败:", error);
+        return { success: false, message: "取消匹配失败" };
+      }
     },
+
     // 开始对战
-    startBattle({ commit }) {
+    startBattle({ commit, state }: any) {
+      if (state.matchStatus !== MatchStatusEnum.MATCHED) {
+        throw new Error("匹配状态不正确");
+      }
       commit("updateMatchStatus", MatchStatusEnum.BATTLING);
-      // 实际项目中可能需要更多处理
-      // router.push("/match/battle");
       return { success: true };
     },
+
     // 结束对战
-    endBattle({ commit }, result) {
+    endBattle({ commit }: any, result: any) {
       commit("updateMatchResult", result);
       commit("updateMatchStatus", MatchStatusEnum.COMPLETED);
     },
+
     // 重置匹配状态
-    resetMatch({ commit }) {
+    resetMatch({ commit, state }: any) {
+      if (state.websocket) {
+        state.websocket.close();
+      }
       commit("updateMatchStatus", MatchStatusEnum.IDLE);
       commit("updateOpponent", null);
       commit("updateCurrentQuestion", null);
       commit("updateMatchResult", null);
+      commit("updateWebSocket", null);
+      commit("updateIsConnected", false);
+      commit("updateRoomId", null);
+      commit("updateErrorMessage", null);
     },
   },
   mutations: {
-    updateMatchStatus(state, status) {
+    updateMatchStatus(state: any, status: any) {
       state.matchStatus = status;
     },
-    updateOpponent(state, opponent) {
+    updateOpponent(state: any, opponent: any) {
       state.opponent = opponent;
     },
-    updateCurrentQuestion(state, question) {
+    updateCurrentQuestion(state: any, question: any) {
       state.currentQuestion = question;
     },
-    updateMatchResult(state, result) {
+    updateMatchResult(state: any, result: any) {
       state.matchResult = result;
+    },
+    updateWebSocket(state: any, websocket: any) {
+      state.websocket = websocket;
+    },
+    updateRoomId(state: any, roomId: any) {
+      state.roomId = roomId;
+    },
+    updateIsConnected(state: any, isConnected: any) {
+      state.isConnected = isConnected;
+    },
+    updateErrorMessage(state: any, errorMessage: any) {
+      state.errorMessage = errorMessage;
     },
   },
   getters: {
-    isMatching(state) {
+    isMatching(state: any) {
       return state.matchStatus === MatchStatusEnum.MATCHING;
     },
-    isMatched(state) {
+    isMatched(state: any) {
       return state.matchStatus === MatchStatusEnum.MATCHED;
     },
-    isBattling(state) {
+    isBattling(state: any) {
       return state.matchStatus === MatchStatusEnum.BATTLING;
     },
-    isCompleted(state) {
+    isCompleted(state: any) {
       return state.matchStatus === MatchStatusEnum.COMPLETED;
     },
   },
-} as StoreOptions<{
-  matchStatus: MatchStatusEnum;
-  opponent: {
-    id: number;
-    userName: string;
-    avatar: string;
-  } | null;
-  currentQuestion: {
-    id: number;
-    title: string;
-    content: string;
-    difficulty: string;
-  } | null;
-  matchResult: {
-    winner: string;
-    time: number;
-  } | null;
-  waitTime: number;
-}>;
+};
