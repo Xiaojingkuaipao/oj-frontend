@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { InterfaceInfo } from './InterfaceInfo';
+import type { InterfaceInfo } from "./InterfaceInfo";
 
 export type BaseResponse_InterfaceInfo_ = {
-    code?: number;
-    data?: InterfaceInfo;
-    message?: string;
+  code?: number;
+  data?: InterfaceInfo;
+  message?: string;
 };

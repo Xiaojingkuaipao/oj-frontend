@@ -4,11 +4,11 @@
 /* eslint-disable */
 
 export type InterfaceInfoAddRequest = {
-    description?: string;
-    method?: string;
-    name?: string;
-    requestParam?: string;
-    responseBody?: string;
-    status?: number;
-    url?: string;
+  description?: string;
+  method?: string;
+  name?: string;
+  requestParam?: string;
+  responseBody?: string;
+  status?: number;
+  url?: string;
 };

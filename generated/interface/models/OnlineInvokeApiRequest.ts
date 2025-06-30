@@ -4,6 +4,6 @@
 /* eslint-disable */
 
 export type OnlineInvokeApiRequest = {
-    id?: number;
-    requestParam?: string;
+  id?: number;
+  requestParam?: string;
 };

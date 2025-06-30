@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import InterviewHeader from "../../components/Interview/InterviewHeader.vue";
 import ChatMessage from "../../components/Interview/ChatMessage.vue";
 import ChatInput from "../../components/Interview/ChatInput.vue";

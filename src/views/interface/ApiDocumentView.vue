@@ -79,7 +79,7 @@ import {
   OnlineInvokeApiRequest,
 } from "../../../generated/interface";
 import message from "@arco-design/web-vue/es/message";
-import { defineProps, onMounted, ref, withDefaults } from "vue";
+import { onMounted, ref, withDefaults } from "vue";
 import { IconPlayArrow } from "@arco-design/web-vue/es/icon";
 import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
@@ -93,6 +93,7 @@ const props = withDefaults(defineProps<Props>(), {
   id: () => "",
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const store = useStore();
 
 const isShow = ref(false);

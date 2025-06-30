@@ -11,7 +11,7 @@
 import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import { Editor } from "@bytemd/vue-next";
-import { ref, withDefaults, defineProps } from "vue";
+import { withDefaults } from "vue";
 
 interface Props {
   value: string;
@@ -21,6 +21,7 @@ interface Props {
 
 const plugins = [gfm(), highlight()];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(defineProps<Props>(), {
   value: () => "",
   mode: () => "split",

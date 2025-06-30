@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Page_InterfaceInfo_ } from './Page_InterfaceInfo_';
+import type { Page_InterfaceInfo_ } from "./Page_InterfaceInfo_";
 
 export type BaseResponse_Page_InterfaceInfo_ = {
-    code?: number;
-    data?: Page_InterfaceInfo_;
-    message?: string;
+  code?: number;
+  data?: Page_InterfaceInfo_;
+  message?: string;
 };

@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { JudgeInfo } from './JudgeInfo';
+import type { JudgeInfo } from "./JudgeInfo";
 
 export type ExecuteCodeResponse = {
-    judgeInfo?: JudgeInfo;
-    message?: string;
-    outputList?: Array<string>;
-    status?: number;
+  judgeInfo?: JudgeInfo;
+  message?: string;
+  outputList?: Array<string>;
+  status?: number;
 };

@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { UserControllerService, UserVO } from "../../../generated/user";
 import message from "@arco-design/web-vue/es/message";
-import { ref, defineProps, withDefaults, onMounted } from "vue";
+import { ref, withDefaults, onMounted } from "vue";
 import { useStore } from "vuex";
 
 interface Props {
@@ -40,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   id: () => "",
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const store = useStore();
 
 const userInfo = ref<UserVO>();

@@ -4,6 +4,6 @@
 /* eslint-disable */
 
 export type InvokeCountRequest = {
-    accessKey?: string;
-    interfaceId?: number;
+  accessKey?: string;
+  interfaceId?: number;
 };

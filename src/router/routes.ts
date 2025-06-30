@@ -14,6 +14,9 @@ import AddInterfaceView from "@/views/interface/AddInterfaceView.vue";
 import AccessEnum from "@/access/accessEnum";
 import UserLayout from "../layouts/UserLayout.vue";
 import InterView from "@/views/interview/InterView.vue";
+// 引入对战相关页面
+import MatchingView from "@/views/battle/MatchingView.vue";
+import BattleRoomView from "@/views/battle/BattleRoomView.vue";
 
 export const routes: Array<RouteRecordRaw> = [
   {
@@ -135,6 +138,35 @@ export const routes: Array<RouteRecordRaw> = [
     path: "/404",
     name: "权限不足",
     component: NoAuthView,
+    meta: {
+      hideInMenu: true,
+    },
+  },
+  // 对战匹配路由
+  {
+    path: "/battle/matching",
+    name: "在线匹配",
+    component: MatchingView,
+    meta: {
+      access: AccessEnum.USER,
+      hideInMenu: true,
+    },
+  },
+  // 对战房间路由
+  {
+    path: "/battle/room/:id",
+    name: "对战房间",
+    component: BattleRoomView,
+    props: true,
+    meta: {
+      access: AccessEnum.USER,
+      hideInMenu: true,
+    },
+  },
+  // 重定向到404页面的路由必须放在最后
+  {
+    path: "/:pathMatch(.*)",
+    redirect: "/404",
     meta: {
       hideInMenu: true,
     },

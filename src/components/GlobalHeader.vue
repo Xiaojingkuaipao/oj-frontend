@@ -32,6 +32,21 @@
           </a-menu-item>
         </a-menu>
       </a-col>
+      <a-col flex="auto" style="text-align: right; margin-right: 20px">
+        <!-- 在线匹配按钮 -->
+        <a-button
+          v-if="isLoggedIn"
+          type="primary"
+          shape="round"
+          @click="startMatching"
+          style="margin-right: 16px"
+        >
+          <template #icon>
+            <icon-thunderbolt />
+          </template>
+          在线匹配
+        </a-button>
+      </a-col>
       <a-col flex="150px">
         <a-dropdown-button>
           {{ displayUserName }}
@@ -75,6 +90,7 @@ import {
   IconImport,
   IconSend,
   IconUser,
+  IconThunderbolt,
 } from "@arco-design/web-vue/es/icon";
 import { routes } from "@/router/routes";
 import { computed, ref } from "vue";
@@ -136,6 +152,192 @@ const goUserInfo = () => {
   router.push({
     path: `/info/user/${store.state.user.loginUser.id}`,
   });
+};
+
+// 开始匹配对战 - 静态演示版本
+const startMatching = () => {
+  // 创建匹配弹窗
+  const matchingModal = document.createElement("div");
+  matchingModal.id = "matching-modal";
+  matchingModal.innerHTML = `
+    <div style="
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.6); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    ">
+      <div style="
+        background: white; 
+        padding: 48px; 
+        border-radius: 12px; 
+        text-align: center; 
+        max-width: 480px;
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        position: relative;
+      ">
+        <div style="font-size: 24px; margin-bottom: 24px; font-weight: 600; color: #1f2937;">正在匹配对手...</div>
+        <div id="wait-time" style="font-size: 18px; color: #3b82f6; margin-bottom: 32px; font-weight: 500;">已等待: 00:00</div>
+        <div style="margin-bottom: 32px;">
+          <div style="
+            width: 60px; 
+            height: 60px; 
+            border: 4px solid #e5e7eb; 
+            border-top: 4px solid #3b82f6; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto;
+          "></div>
+        </div>
+        <div style="color: #6b7280; margin-bottom: 24px; font-size: 14px;">
+          请耐心等待，我们正在为您寻找合适的对手
+        </div>
+        <button id="cancel-btn" style="
+          background: #ef4444; 
+          color: white; 
+          border: none; 
+          padding: 12px 24px; 
+          border-radius: 8px; 
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s;
+        " 
+        onmouseover="this.style.background='#dc2626'" 
+        onmouseout="this.style.background='#ef4444'">
+          取消匹配
+        </button>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+
+  document.body.appendChild(matchingModal);
+
+  let waitTime = 0;
+  const waitTimer = setInterval(() => {
+    waitTime++;
+    const mins = Math.floor(waitTime / 60);
+    const secs = waitTime % 60;
+    const timeElement = document.getElementById("wait-time");
+    if (timeElement) {
+      timeElement.textContent = `已等待: ${mins
+        .toString()
+        .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    // 2秒后匹配成功
+    if (waitTime >= 2) {
+      clearInterval(waitTimer);
+      showMatchSuccess(matchingModal);
+    }
+  }, 1000);
+
+  // 取消匹配功能
+  const cancelBtn = matchingModal.querySelector("#cancel-btn");
+  cancelBtn?.addEventListener("click", () => {
+    clearInterval(waitTimer);
+    document.body.removeChild(matchingModal);
+    message.info("已取消匹配");
+  });
+
+  // 匹配成功显示
+  const showMatchSuccess = (modal: HTMLElement) => {
+    modal.innerHTML = `
+      <div style="
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.6); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+      ">
+        <div style="
+          background: white; 
+          padding: 48px; 
+          border-radius: 12px; 
+          text-align: center; 
+          max-width: 480px;
+          box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        ">
+          <div style="
+            width: 80px; 
+            height: 80px; 
+            background: #10b981; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0 auto 24px auto;
+          ">
+            <div style="font-size: 48px; color: white;">✓</div>
+          </div>
+          <div style="font-size: 24px; color: #10b981; margin-bottom: 24px; font-weight: 600;">匹配成功！</div>
+          <div style="
+            background: #f8fafc; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+          ">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+              <div style="
+                width: 48px; 
+                height: 48px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                border-radius: 50%; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                color: white; 
+                font-weight: bold; 
+                margin-right: 16px;
+              ">AI</div>
+              <div style="text-align: left;">
+                <div style="font-size: 18px; font-weight: 600; color: #1f2937;">智能对手</div>
+                <div style="color: #6b7280; font-size: 14px;">等级：Gold | 胜率：85%</div>
+              </div>
+            </div>
+          </div>
+          <div id="countdown" style="font-size: 48px; color: #3b82f6; margin-bottom: 12px; font-weight: bold;">3</div>
+          <div style="color: #6b7280; font-size: 16px;">秒后开始对战</div>
+        </div>
+      </div>
+    `;
+
+    let countdown = 3;
+    const countdownTimer = setInterval(() => {
+      countdown--;
+      const countdownElement = document.getElementById("countdown");
+      if (countdownElement) {
+        countdownElement.textContent = countdown.toString();
+      }
+
+      if (countdown <= 0) {
+        clearInterval(countdownTimer);
+        document.body.removeChild(modal);
+        // 跳转到静态对战房间演示
+        router.push("/battle/room/demo123");
+        message.success("进入对战房间！");
+      }
+    }, 1000);
+  };
 };
 
 const handleLogout = async () => {

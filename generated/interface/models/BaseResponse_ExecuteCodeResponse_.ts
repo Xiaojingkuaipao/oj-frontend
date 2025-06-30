@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExecuteCodeResponse } from './ExecuteCodeResponse';
+import type { ExecuteCodeResponse } from "./ExecuteCodeResponse";
 
 export type BaseResponse_ExecuteCodeResponse_ = {
-    code?: number;
-    data?: ExecuteCodeResponse;
-    message?: string;
+  code?: number;
+  data?: ExecuteCodeResponse;
+  message?: string;
 };

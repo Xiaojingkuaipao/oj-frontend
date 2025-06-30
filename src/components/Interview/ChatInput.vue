@@ -25,7 +25,6 @@
 
 <script setup>
 import { ref } from "vue";
-import { defineProps, defineEmits } from "vue";
 import QuickActions from "./QuickActions.vue";
 
 const props = defineProps({

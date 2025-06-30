@@ -12,7 +12,6 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
 defineEmits(["quick-reply"]);
 
 const quickActions = [

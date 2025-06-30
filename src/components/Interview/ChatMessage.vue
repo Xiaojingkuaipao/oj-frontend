@@ -10,7 +10,6 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
 defineProps({
   message: {
     type: Object,

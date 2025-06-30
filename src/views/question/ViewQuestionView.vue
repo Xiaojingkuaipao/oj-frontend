@@ -133,7 +133,7 @@ import {
   QuestionVO,
 } from "../../../generated/question";
 import message from "@arco-design/web-vue/es/message";
-import { ref, defineProps, withDefaults, onMounted, computed } from "vue";
+import { ref, withDefaults, onMounted, computed } from "vue";
 import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
 import CommentItem from "@/components/CommentItem.vue";

@@ -4,12 +4,12 @@
 /* eslint-disable */
 
 export type InterfaceInfoUpdateRequest = {
-    description?: string;
-    id?: number;
-    method?: string;
-    name?: string;
-    requestParam?: string;
-    responseBody?: string;
-    status?: number;
-    url?: string;
+  description?: string;
+  id?: number;
+  method?: string;
+  name?: string;
+  requestParam?: string;
+  responseBody?: string;
+  status?: number;
+  url?: string;
 };

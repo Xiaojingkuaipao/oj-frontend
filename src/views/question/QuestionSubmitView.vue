@@ -155,6 +155,7 @@ const doSubmit = () => {
 
 const router = useRouter();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const toQuestionPage = (question: Question) => {
   router.push({
     path: `/view/question/${question.id}`,
