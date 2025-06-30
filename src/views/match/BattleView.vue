@@ -42,9 +42,14 @@
           <!-- 代码编辑部分 -->
           <div class="code-section">
             <div class="code-editor">
-              <code-editor
+              <!-- <code-editor
                 :value="code"
                 :handle-change="handleLanguageChange"
+              /> -->
+              <code-editor
+                :value="form.code"
+                :handle-change="handleLanguageChange"
+                :language="form.language"
               />
             </div>
 
@@ -71,10 +76,12 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import { defineProps, withDefaults } from "vue";
 import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
 import { Message } from "@arco-design/web-vue";
 import { IconSend } from "@arco-design/web-vue/es/icon";
+import { QuestionSubmitAddRequest } from "generated/question";
 
 const router = useRouter();
 const store = useStore();
@@ -82,6 +89,44 @@ const store = useStore();
 const loading = ref(true);
 const code = ref("");
 const language = ref("java");
+
+const codeTemplates = {
+  java:
+    "import java.util.*;\n\n" +
+    "public class Main {\n" +
+    "    public static void main(String[] args) throws Exception {\n\n" +
+    "    }\n" +
+    "}",
+  cpp:
+    "#include <iostream>\n" +
+    "#include <vector>\n" +
+    "#include <algorithm>\n" +
+    "using namespace std;\n\n" +
+    "int main() {\n\n" +
+    "    return 0;\n" +
+    "}",
+  go:
+    "package main\n\n" +
+    "import (\n" +
+    '    "fmt"\n' +
+    ")\n\n" +
+    "func main() {\n\n" +
+    "}",
+};
+
+interface Props {
+  id: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  id: () => "",
+});
+
+const form = ref<QuestionSubmitAddRequest>({
+  language: "java",
+  code: codeTemplates.java,
+  questionId: props.id as any,
+});
 
 // 用户信息
 const userName = computed(
@@ -105,7 +150,7 @@ const handleLanguageChange = (newLanguage: string) => {
 
 // 提交代码
 const submitCode = async () => {
-  if (!code.value.trim()) {
+  if (!form.value) {
     Message.warning("代码不能为空");
     return;
   }
