@@ -66,7 +66,16 @@ const handleCancel = async () => {
 // 开始对战
 const startBattle = async () => {
   try {
-    await store.dispatch("match/startBattle");
+    console.log(
+      "MatchWaitingView: 开始对战，当前状态:",
+      store.state.match.matchStatus
+    );
+    const result = await store.dispatch("match/startBattle");
+    console.log("MatchWaitingView: startBattle 结果:", result);
+    console.log(
+      "MatchWaitingView: 对战状态更新后:",
+      store.state.match.matchStatus
+    );
     router.push("/match/battle");
   } catch (error) {
     console.error("开始对战失败:", error);
@@ -98,9 +107,15 @@ onMounted(async () => {
 
 // 组件销毁前重置匹配状态
 onBeforeUnmount(() => {
-  // 只有当不是匹配成功状态时才重置
-  if (!isMatched.value) {
+  // 只有当不是匹配成功或对战中状态时才重置
+  if (!isMatched.value && !store.getters["match/isBattling"]) {
+    console.log("MatchWaitingView: 重置匹配状态");
     store.dispatch("match/resetMatch");
+  } else {
+    console.log(
+      "MatchWaitingView: 保持匹配状态，当前状态:",
+      store.state.match.matchStatus
+    );
   }
 });
 </script>

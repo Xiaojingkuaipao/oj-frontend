@@ -64,7 +64,8 @@ export default {
     startBattle({ commit }) {
       commit("updateMatchStatus", MatchStatusEnum.BATTLING);
       // 实际项目中可能需要更多处理
-      router.push("/match/battle");
+      // router.push("/match/battle");
+      return { success: true };
     },
     // 结束对战
     endBattle({ commit }, result) {
