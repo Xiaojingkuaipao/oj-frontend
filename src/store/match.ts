@@ -48,6 +48,11 @@ export default {
         const websocket = new MatchWebSocket("139.9.144.238:8101", userName);
         commit("updateWebSocket", websocket);
 
+        // 先测试服务器连接性
+        console.log("开始测试服务器连接性...");
+        const isServerReachable = await websocket.testConnection();
+        console.log("服务器连接测试结果:", isServerReachable);
+
         // 设置回调函数
         websocket.setCallbacks({
           onConnected: () => {

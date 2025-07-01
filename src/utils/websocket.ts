@@ -25,8 +25,15 @@ export class MatchWebSocket {
   private onDisconnected?: () => void;
 
   constructor(serverUrl: string, userName: string) {
-    this.url = `${serverUrl}/api/1v1match/ws`;
+    // 确保正确的WebSocket URL格式
+    const cleanServerUrl = serverUrl.replace(/^https?:\/\//, "");
+    this.url = `ws://${cleanServerUrl}/api/1v1match/ws`;
     this.userName = userName;
+    console.log("WebSocket配置初始化:");
+    console.log("- 原始服务器地址:", serverUrl);
+    console.log("- 清理后的地址:", cleanServerUrl);
+    console.log("- 最终WebSocket URL:", this.url);
+    console.log("- 用户名:", userName);
   }
 
   // 设置回调函数
@@ -46,14 +53,29 @@ export class MatchWebSocket {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        console.log("1");
-        console.log("正在连接WebSocket:", this.url);
-        console.log("2");
+        console.log("开始建立WebSocket连接...");
+        console.log("连接URL:", this.url);
+        console.log("用户名:", this.userName);
+
+        // 检查WebSocket支持
+        if (!window.WebSocket) {
+          throw new Error("浏览器不支持WebSocket");
+        }
+
+        // 设置连接超时
+        const connectionTimeout = setTimeout(() => {
+          if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            this.ws.close();
+            reject(new Error("WebSocket连接超时"));
+          }
+        }, 10000); // 10秒超时
+
         this.ws = new WebSocket(this.url);
-        console.log("3");
+        console.log("WebSocket对象已创建");
 
         this.ws.onopen = () => {
           console.log("WebSocket连接成功");
+          clearTimeout(connectionTimeout); // 清除超时
           this.reconnectAttempts = 0;
           this.startHeartbeat();
 
@@ -84,13 +106,22 @@ export class MatchWebSocket {
         };
 
         this.ws.onerror = (error) => {
-          console.error("WebSocket错误:", error);
+          console.error("WebSocket错误详情:", {
+            url: this.url,
+            readyState: this.ws?.readyState,
+            error: error,
+          });
           this.onError?.(error);
-          reject(error);
+          reject(new Error(`WebSocket连接失败: ${this.url}`));
         };
 
         this.ws.onclose = (event) => {
-          console.log("WebSocket连接关闭:", event.code, event.reason);
+          console.log("WebSocket连接关闭详情:", {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+            url: this.url,
+          });
           this.stopHeartbeat();
           this.onDisconnected?.();
 
@@ -144,6 +175,28 @@ export class MatchWebSocket {
         console.log("重连失败");
       });
     }, this.reconnectInterval);
+  }
+
+  // 测试服务器连接性
+  async testConnection(): Promise<boolean> {
+    try {
+      // 尝试连接到HTTP端口检查服务器是否可达
+      const httpUrl = this.url
+        .replace("ws://", "http://")
+        .replace("/api/1v1match/ws", "");
+      console.log("测试HTTP连接:", httpUrl);
+
+      await fetch(httpUrl, {
+        method: "GET",
+        mode: "no-cors", // 避免CORS问题
+      });
+
+      console.log("HTTP连接测试完成");
+      return true;
+    } catch (error) {
+      console.error("服务器连接测试失败:", error);
+      return false;
+    }
   }
 
   // 取消匹配
