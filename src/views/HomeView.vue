@@ -129,7 +129,7 @@ const searchParams = ref<QuestionQueryRequest>({
 // 开始对战
 const startMatch = async () => {
   try {
-    await startMatching();
+    // await startMatching();
     router.push("/match/waiting");
   } catch (error) {
     console.error("开始匹配失败:", error);

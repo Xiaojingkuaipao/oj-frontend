@@ -46,10 +46,10 @@
             <div class="stat-label">题目</div>
             <div class="stat-value">{{ questionTitle }}</div>
           </div>
-          <div class="stat-item">
+          <!-- <div class="stat-item">
             <div class="stat-label">对战时长</div>
             <div class="stat-value">{{ formattedTime }}</div>
-          </div>
+          </div> -->
           <div class="stat-item">
             <div class="stat-label">房间ID</div>
             <div class="stat-value">{{ roomId || "N/A" }}</div>

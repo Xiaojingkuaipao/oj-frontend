@@ -50,6 +50,13 @@
           >
             开始对战
           </a-button>
+          <!-- <a-button
+            type="primary"
+            @click="handleStartBattle"
+            :loading="isLoading"
+          >
+            开始对战
+          </a-button> -->
           <a-button style="margin-left: 12px" @click="handleCancel">
             取消
           </a-button>

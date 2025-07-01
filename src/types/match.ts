@@ -25,7 +25,7 @@ export interface MatchResponse {
   roomId?: string;
   userId?: string;
   userName?: string;
-  opponentName?: string;
+  oppoUserName?: string;
   message?: string;
 }
 
@@ -35,7 +35,7 @@ export interface QueryMatchResponse {
   roomId?: string;
   userId?: string;
   userName?: string;
-  opponentName?: string;
+  oppoUserName?: string;
   message?: string;
 }
 

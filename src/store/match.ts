@@ -151,10 +151,10 @@ const matchModule: Module<MatchState, unknown> = {
           commit("SET_MATCH_INFO", {
             roomId: data.roomId,
             userId: data.userId,
-            opponent: data.opponentName
+            opponent: data.oppoUserName
               ? {
                   userId: "",
-                  userName: data.opponentName,
+                  userName: data.oppoUserName,
                 }
               : null,
           });
@@ -212,10 +212,10 @@ const matchModule: Module<MatchState, unknown> = {
             commit("SET_MATCH_INFO", {
               roomId: data.roomId,
               userId: data.userId,
-              opponent: data.opponentName
+              opponent: data.oppoUserName
                 ? {
                     userId: "",
-                    userName: data.opponentName,
+                    userName: data.oppoUserName,
                   }
                 : null,
             });
@@ -240,45 +240,37 @@ const matchModule: Module<MatchState, unknown> = {
       }
 
       try {
-        console.log("1");
         commit("SET_CONNECTION_STATUS", ConnectionStatus.CONNECTING);
-        console.log("2");
 
         const ws = new MatchWebSocket(DEFAULT_WEBSOCKET_CONFIG);
-        console.log("3");
 
         ws.on("open", () => {
-          console.log("4");
           commit("SET_CONNECTION_STATUS", ConnectionStatus.CONNECTED);
           console.log("WebSocket连接成功");
         });
 
         ws.on("close", () => {
-          console.log("5");
           commit("SET_CONNECTION_STATUS", ConnectionStatus.DISCONNECTED);
           console.log("WebSocket连接关闭");
         });
 
         ws.on("error", (error) => {
-          console.log("5");
           console.error("WebSocket错误:", error);
           commit("SET_ERROR", "连接失败，请检查网络");
         });
 
         ws.on("message", (message: ServerMatchMessage) => {
-          console.log("5");
+          console.log("websocket接收到的消息", message);
           dispatch("handleWebSocketMessage", message);
         });
 
         ws.on("reconnect", () => {
-          console.log("6");
           if (state.userId) {
             ws.connect(state.userId);
           }
         });
 
         ws.on("reconnect_failed", () => {
-          console.log("7");
           commit("SET_ERROR", "连接失败，请重新匹配");
           dispatch("cancelMatching");
         });
@@ -286,7 +278,6 @@ const matchModule: Module<MatchState, unknown> = {
         await ws.connect(state.userId);
         window.matchWebSocket = ws;
       } catch (error) {
-        console.log("8");
         console.error("WebSocket连接失败:", error);
         commit("SET_CONNECTION_STATUS", ConnectionStatus.DISCONNECTED);
         commit("SET_ERROR", "连接失败，请稍后重试");
@@ -294,9 +285,9 @@ const matchModule: Module<MatchState, unknown> = {
       }
     },
 
-    handleWebSocketMessage({ commit }, message: ServerMatchMessage) {
+    handleWebSocketMessage({ commit, state }, message: ServerMatchMessage) {
       console.log("处理WebSocket消息:", message);
-
+      console.log("kaishi");
       switch (message.type) {
         case "QUERY_PROBLEM": {
           if (message.title && message.content) {
@@ -308,6 +299,7 @@ const matchModule: Module<MatchState, unknown> = {
               tags: message.tags || [],
               judgeConfig: message.judgeConfig,
             };
+            console.log("得到的题目：", question);
             commit("SET_CURRENT_QUESTION", question);
             commit("SET_STATUS", MatchStatus.BATTLE);
           }
@@ -325,15 +317,16 @@ const matchModule: Module<MatchState, unknown> = {
         }
 
         case "QUERY_SUBMIT": {
-          if (message.questionSubmitId && message.ans_success !== undefined) {
-            if (message.ans_success === 2) {
-              const currentUserId = window.currentUserId;
+          if (message.ans_success !== undefined) {
+            if (message.ans_success == 2) {
+              const currentUserId = state.userId;
               const result: BattleResult = {
-                winner: message.userId === currentUserId ? "我" : "对手",
-                loser: message.userId === currentUserId ? "对手" : "我",
+                winner: message.userId == currentUserId ? "我" : "对手",
+                loser: message.userId == currentUserId ? "对手" : "我",
                 time: Date.now(),
                 reason: "correct_answer",
               };
+              console.log("当前对战结果:", result);
               commit("SET_BATTLE_RESULT", result);
               commit("SET_STATUS", MatchStatus.ENDED);
             }
@@ -359,6 +352,7 @@ const matchModule: Module<MatchState, unknown> = {
     },
 
     sendWebSocketMessage({ state }, message: ClientMatchMessage) {
+      console.log("send websocket message");
       const ws = window.matchWebSocket;
       if (!ws) {
         throw new Error("WebSocket未连接");
@@ -368,7 +362,7 @@ const matchModule: Module<MatchState, unknown> = {
         message.roomId = state.roomId;
       }
 
-      return ws.send(message);
+      return ws?.send(message);
     },
 
     async startBattle({ dispatch, commit }) {

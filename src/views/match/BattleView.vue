@@ -120,6 +120,8 @@ const {
   watchBattleResult,
 } = useMatch();
 
+console.log("battle View CurrentQusetion:", currentQuestion);
+
 interface Props {
   id: string;
 }
@@ -191,6 +193,7 @@ const handleSubmitCode = async () => {
   }
 
   try {
+    console.log("battle View submit code");
     await submitCode(form.value.code, form.value.language);
   } catch (error) {
     console.error("提交失败:", error);

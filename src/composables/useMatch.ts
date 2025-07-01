@@ -6,6 +6,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { Message } from "@arco-design/web-vue";
 import type { BattleResult } from "@/types/match";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 export function useMatch() {
   const store = useStore();
@@ -93,7 +94,8 @@ export function useMatch() {
       Message.error("没有当前题目");
       return;
     }
-
+    console.log("submit code function, code:", code, "language:", language);
+    console.log("currentQusetion:", currentQuestion.value);
     try {
       submitLoading.value = true;
 
