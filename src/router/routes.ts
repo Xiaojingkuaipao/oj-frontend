@@ -38,7 +38,7 @@ export const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/match/battle",
+    path: "/match/battle/:id?",
     name: "对战页面",
     component: BattleView,
     meta: {

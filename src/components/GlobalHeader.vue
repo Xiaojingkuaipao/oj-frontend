@@ -94,7 +94,6 @@ import { useStore } from "vuex";
 import checkAccess from "@/access/checkAccess";
 import "@/access";
 import message from "@arco-design/web-vue/es/message";
-import { MatchStatusEnum } from "@/store/match";
 
 const router = useRouter();
 const selectKeys = ref(["/"]);

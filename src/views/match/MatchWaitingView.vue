@@ -42,7 +42,14 @@
           </div>
         </div>
         <div class="action-buttons">
-          <a-button type="primary" @click="startBattle">开始对战</a-button>
+          <a-button
+            type="primary"
+            @click="handleStartBattle"
+            :disabled="!canStartBattle"
+            :loading="isLoading"
+          >
+            开始对战
+          </a-button>
           <a-button style="margin-left: 12px" @click="handleCancel">
             取消
           </a-button>
@@ -72,95 +79,65 @@ import {
   IconCheckCircleFill,
   IconCloseCircleFill,
 } from "@arco-design/web-vue/es/icon";
-import { Message } from "@arco-design/web-vue";
+import { useMatch } from "@/composables/useMatch";
 
 const store = useStore();
 const router = useRouter();
+const {
+  isLoading,
+  isMatching,
+  isMatched,
+  canStartBattle,
+  isConnected,
+  roomId,
+  opponent,
+  errorMessage,
+  startMatching,
+  cancelMatching,
+  startBattle,
+  reset,
+} = useMatch();
 
 // 计算属性
-const isMatching = computed(() => store.getters["match/isMatching"]);
-const isMatched = computed(() => store.getters["match/isMatched"]);
-const opponent = computed(() => store.state.match.opponent);
-const roomId = computed(() => store.state.match.roomId);
-const isConnected = computed(() => store.state.match.isConnected);
-const errorMessage = computed(() => store.state.match.errorMessage);
 const currentUserName = computed(() => store.state.user?.loginUser?.userName);
+
+// 开始对战
+const handleStartBattle = async () => {
+  await startBattle();
+};
 
 // 处理取消匹配
 const handleCancel = async () => {
-  try {
-    await store.dispatch("match/cancelMatching");
-    router.push("/");
-  } catch (error) {
-    console.error("取消匹配失败:", error);
-    Message.error("取消匹配失败");
-  }
-};
-
-// 开始对战
-const startBattle = async () => {
-  try {
-    console.log(
-      "MatchWaitingView: 开始对战，当前状态:",
-      store.state.match.matchStatus
-    );
-    const result = await store.dispatch("match/startBattle");
-    console.log("MatchWaitingView: startBattle 结果:", result);
-    router.push("/match/battle");
-  } catch (error) {
-    console.error("开始对战失败:", error);
-    Message.error("开始对战失败，请稍后重试");
-  }
+  await cancelMatching();
+  router.push("/");
 };
 
 // 重新匹配
 const retryMatching = async () => {
-  try {
-    await store.dispatch("match/startMatching");
-  } catch (error) {
-    console.error("重新匹配失败:", error);
-    Message.error("重新匹配失败，请稍后重试");
-  }
+  reset();
+  await startMatching();
 };
 
 // 返回首页
 const goBack = () => {
+  reset();
   router.push("/");
 };
 
 // 组件挂载时开始匹配
 onMounted(async () => {
-  // 判断用户是否已登录
-  const isLoggedIn =
-    store.state.user?.loginUser?.userRole &&
-    store.state.user?.loginUser?.userRole !== "notLogin";
-
-  if (!isLoggedIn) {
-    Message.error("请先登录再进行匹配");
-    router.push("/user/login");
-    return;
-  }
-
-  // 如果已经在匹配中，不重新开始
-  if (store.state.match.matchStatus !== "idle") {
-    console.log("匹配已在进行中，当前状态:", store.state.match.matchStatus);
-    return;
-  }
-
   try {
-    await store.dispatch("match/startMatching");
+    await startMatching();
   } catch (error) {
-    console.error("匹配失败:", error);
-    Message.error("匹配失败，请稍后重试");
+    console.error("自动开始匹配失败:", error);
   }
 });
 
-// 组件销毁前处理
+// 组件卸载时清理
 onBeforeUnmount(() => {
-  // 如果页面关闭但还在匹配中，询问是否取消匹配
+  // 如果还在匹配中，取消匹配
   if (isMatching.value) {
-    console.log("MatchWaitingView: 页面即将离开，但匹配仍在进行中");
-    // 注意：这里可能需要用户确认是否取消匹配
+    cancelMatching();
   }
 });
 </script>
@@ -256,35 +233,28 @@ onBeforeUnmount(() => {
   margin: 20px 0;
 }
 
+.avatar {
+  margin-bottom: 12px;
+}
+
 .opponent-name {
-  margin-top: 8px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
+  color: #333;
 }
 
 .action-buttons {
   margin-top: 24px;
 }
 
-.success-icon {
-  margin-bottom: 8px;
-}
-
-.error-status {
-  padding: 20px 0;
-}
-
-.error-icon {
-  margin-bottom: 16px;
-}
-
 .error-text {
   font-size: 16px;
+  margin: 16px 0;
   color: #f53f3f;
-  margin-bottom: 24px;
-  padding: 12px;
-  background-color: #ffeaea;
-  border-radius: 6px;
-  border-left: 4px solid #f53f3f;
+}
+
+.success-icon,
+.error-icon {
+  margin-bottom: 16px;
 }
 </style>

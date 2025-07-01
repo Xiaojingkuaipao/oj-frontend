@@ -42,24 +42,49 @@
           <!-- 代码编辑部分 -->
           <div class="code-section">
             <div class="code-editor">
-              <!-- <code-editor
-                :value="code"
-                :handle-change="handleLanguageChange"
-              /> -->
               <code-editor
                 :value="form.code"
-                :handle-change="handleLanguageChange"
+                :handle-change="handleCodeChange"
                 :language="form.language"
               />
             </div>
 
             <div class="action-buttons">
-              <a-button type="primary" @click="submitCode" size="large">
+              <a-button
+                type="primary"
+                @click="handleSubmitCode"
+                size="large"
+                :loading="submitLoading"
+              >
                 <template #icon>
                   <icon-send />
                 </template>
                 提交代码
               </a-button>
+              <a-button
+                type="outline"
+                status="danger"
+                @click="handleGiveup"
+                size="large"
+                style="margin-left: 12px"
+              >
+                放弃对战
+              </a-button>
+            </div>
+          </div>
+
+          <!-- 提交结果显示 -->
+          <div v-if="submitResults.length > 0" class="submit-results">
+            <h3>提交历史</h3>
+            <div
+              v-for="(result, index) in submitResults"
+              :key="index"
+              class="result-item"
+            >
+              <a-tag :color="getResultColor(result.status)" size="small">
+                {{ getResultText(result.status) }}
+              </a-tag>
+              <span class="submit-id">ID: {{ result.questionSubmitId }}</span>
             </div>
           </div>
         </div>
@@ -75,44 +100,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
-import { useStore } from "vuex";
 import { defineProps, withDefaults } from "vue";
 import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
 import { Message } from "@arco-design/web-vue";
 import { IconSend } from "@arco-design/web-vue/es/icon";
-import { QuestionSubmitAddRequest } from "generated/question";
+import { useMatch } from "@/composables/useMatch";
 
 const router = useRouter();
-const store = useStore();
-
-const loading = ref(true);
-const code = ref("");
-const language = ref("java");
-
-const codeTemplates = {
-  java:
-    "import java.util.*;\n\n" +
-    "public class Main {\n" +
-    "    public static void main(String[] args) throws Exception {\n\n" +
-    "    }\n" +
-    "}",
-  cpp:
-    "#include <iostream>\n" +
-    "#include <vector>\n" +
-    "#include <algorithm>\n" +
-    "using namespace std;\n\n" +
-    "int main() {\n\n" +
-    "    return 0;\n" +
-    "}",
-  go:
-    "package main\n\n" +
-    "import (\n" +
-    '    "fmt"\n' +
-    ")\n\n" +
-    "func main() {\n\n" +
-    "}",
-};
+const {
+  submitLoading,
+  isBattling,
+  currentQuestion,
+  opponent,
+  submitResults,
+  submitCode,
+  giveupBattle,
+  getDifficultyColor,
+  watchBattleResult,
+} = useMatch();
 
 interface Props {
   id: string;
@@ -122,96 +128,139 @@ const props = withDefaults(defineProps<Props>(), {
   id: () => "",
 });
 
-const form = ref<QuestionSubmitAddRequest>({
+// 响应式数据
+const loading = ref(false);
+const form = ref({
   language: "java",
-  code: codeTemplates.java,
-  questionId: props.id as any,
+  code: getDefaultCode("java"),
+  questionId: props.id,
 });
 
-// 用户信息
-const userName = computed(
-  () => store.state.user?.loginUser?.userName || "用户"
-);
-const opponentName = computed(
-  () => store.state.match.opponent?.userName || "对手"
-);
+// 代码模板
+function getDefaultCode(language: string): string {
+  const templates: Record<string, string> = {
+    java:
+      "import java.util.*;\n\n" +
+      "public class Main {\n" +
+      "    public static void main(String[] args) throws Exception {\n\n" +
+      "    }\n" +
+      "}",
+    cpp:
+      "#include <iostream>\n" +
+      "#include <vector>\n" +
+      "#include <algorithm>\n" +
+      "using namespace std;\n\n" +
+      "int main() {\n\n" +
+      "    return 0;\n" +
+      "}",
+    python:
+      "# -*- coding: utf-8 -*-\n\n" +
+      "def main():\n" +
+      "    pass\n\n" +
+      "if __name__ == '__main__':\n" +
+      "    main()",
+    javascript:
+      "// Node.js 环境\n\n" +
+      "function main() {\n" +
+      "    // 你的代码\n" +
+      "}\n\n" +
+      "main();",
+  };
+  return templates[language] || "";
+}
 
-// 当前题目
-const currentQuestion = computed(() => store.state.match.currentQuestion);
+// 计算属性
+const userName = computed(() => "我"); // 可以从store获取真实用户名
+const opponentName = computed(() => opponent.value?.userName || "对手");
 
-// 添加调试信息
-console.log("store.state.match:", store.state.match);
-console.log("当前题目 currentQuestion.value:", currentQuestion.value);
-
-// 处理语言切换
-const handleLanguageChange = (newLanguage: string) => {
-  language.value = newLanguage;
+// 处理代码变更
+const handleCodeChange = (newCode: string) => {
+  form.value.code = newCode;
 };
 
 // 提交代码
-const submitCode = async () => {
-  if (!form.value) {
+const handleSubmitCode = async () => {
+  if (!form.value.code.trim()) {
     Message.warning("代码不能为空");
     return;
   }
 
+  if (!currentQuestion.value) {
+    Message.error("没有当前题目");
+    return;
+  }
+
   try {
-    // 模拟提交成功
-    Message.success("代码提交成功");
-    // 创建胜利结果
-    const result = {
-      winner: userName.value,
-      time: Math.floor(Math.random() * 120000 + 30000), // 随机30-150秒
-    };
-    // 更新比赛结果
-    await store.dispatch("match/endBattle", result);
-    // 跳转到结果页面
-    setTimeout(() => {
-      router.push("/match/result");
-    }, 1500);
+    await submitCode(form.value.code, form.value.language);
   } catch (error) {
     console.error("提交失败:", error);
-    Message.error("提交失败，请稍后重试");
   }
 };
 
-// 获取难度颜色
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty?.toLowerCase()) {
-    case "简单":
-      return "green";
-    case "中等":
-      return "orange";
-    case "困难":
-      return "red";
+// 放弃对战
+const handleGiveup = async () => {
+  try {
+    await giveupBattle();
+  } catch (error) {
+    console.error("放弃对战失败:", error);
+  }
+};
+
+// 获取提交结果颜色
+const getResultColor = (status: number) => {
+  switch (status) {
+    case 0:
+      return "blue"; // 判题中
+    case 1:
+      return "red"; // 错误
+    case 2:
+      return "green"; // 正确
     default:
-      return "blue";
+      return "gray";
   }
 };
 
-onMounted(async () => {
-  console.log("BattleView mounted - 检查题目状态");
-  console.log("当前匹配状态:", store.state.match.matchStatus);
-  console.log("当前题目:", store.state.match.currentQuestion);
-  // 给一个短暂的延迟，确保状态已经更新
-  setTimeout(() => {
-    if (!currentQuestion.value) {
-      console.error("未找到对战题目");
-      Message.warning("未找到对战题目，即将返回首页");
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-      return;
-    }
-    console.log("题目加载成功:", currentQuestion.value);
-    loading.value = false;
-  }, 100);
+// 获取提交结果文本
+const getResultText = (status: number) => {
+  switch (status) {
+    case 0:
+      return "判题中";
+    case 1:
+      return "答案错误";
+    case 2:
+      return "答案正确";
+    default:
+      return "未知状态";
+  }
+};
+
+// 监听对战结果
+onMounted(() => {
+  if (!isBattling.value) {
+    Message.warning("请先开始对战");
+    router.push("/match/waiting");
+    return;
+  }
+
+  // 监听对战结果
+  const unwatch = watchBattleResult(() => {
+    setTimeout(() => {
+      router.push("/match/result");
+    }, 2000);
+  });
+
+  // 组件卸载时取消监听
+  onBeforeUnmount(() => {
+    unwatch();
+  });
 });
 
-// 组件销毁前确认是否离开对战
+// 页面卸载前提示
 onBeforeUnmount(() => {
-  // 实际项目中应该有离开对战的确认逻辑
-  console.log("离开对战页面");
+  if (isBattling.value) {
+    // 实际项目中可以添加确认对话框
+    console.log("用户离开对战页面");
+  }
 });
 </script>
 
@@ -242,7 +291,6 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .battle-status {
@@ -334,6 +382,31 @@ onBeforeUnmount(() => {
   padding-top: 16px;
   border-top: 1px solid #e5e6eb;
   flex-shrink: 0;
+}
+
+.submit-results {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.submit-results h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #333;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.submit-id {
+  font-size: 12px;
+  color: #666;
 }
 
 .empty-state {
