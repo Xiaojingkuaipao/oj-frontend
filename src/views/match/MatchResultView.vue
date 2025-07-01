@@ -138,7 +138,7 @@ const startNewMatch = async () => {
 
 const viewSubmissions = () => {
   // 跳转到提交记录页面
-  router.push("/question/submit");
+  router.push("/question_submit");
 };
 
 // 页面挂载时检查是否有对战结果
