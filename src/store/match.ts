@@ -45,7 +45,7 @@ export default {
         commit("updateErrorMessage", null);
 
         // 创建WebSocket连接
-        const websocket = new MatchWebSocket("139.9.144.238:8080", userName);
+        const websocket = new MatchWebSocket("139.9.144.238:8101", userName);
         commit("updateWebSocket", websocket);
 
         // 设置回调函数

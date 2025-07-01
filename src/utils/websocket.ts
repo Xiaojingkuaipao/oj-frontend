@@ -1,4 +1,5 @@
 // WebSocket匹配服务
+// 接口定义
 export interface MatchResponse {
   success: boolean; // 是否匹配成功
   message: string; // 备注
@@ -8,12 +9,12 @@ export interface MatchResponse {
 }
 
 export class MatchWebSocket {
-  private ws: WebSocket | null = null;
+  private ws: WebSocket | null = null; // web socket连接对象
   private url: string;
   private userName: string;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectInterval = 3000;
+  private reconnectAttempts = 0; // 当前重连次数
+  private maxReconnectAttempts = 5; // 最大重连次数
+  private reconnectInterval = 3000; // 重连间隔
   private heartbeatInterval: number | null = null;
   private isManualClose = false;
 
@@ -24,7 +25,7 @@ export class MatchWebSocket {
   private onDisconnected?: () => void;
 
   constructor(serverUrl: string, userName: string) {
-    this.url = `ws://${serverUrl}/websocket/match`;
+    this.url = `${serverUrl}/api/1v1match/ws`;
     this.userName = userName;
   }
 
@@ -45,8 +46,11 @@ export class MatchWebSocket {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        console.log("1");
         console.log("正在连接WebSocket:", this.url);
+        console.log("2");
         this.ws = new WebSocket(this.url);
+        console.log("3");
 
         this.ws.onopen = () => {
           console.log("WebSocket连接成功");
