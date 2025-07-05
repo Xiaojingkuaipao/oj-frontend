@@ -1,5 +1,19 @@
 <template>
   <div id="viewQuestionView">
+    <!-- 对战模式顶部指示器 -->
+    <div v-if="isBattleMode" class="battle-indicator">
+      <div class="battle-status">
+        <a-badge status="processing" />
+        <span class="battle-text">对战模式</span>
+      </div>
+      <div class="battle-opponent">
+        <span class="vs-text">VS</span>
+        <a-avatar size="small" style="margin-right: 8px">
+          {{ opponent?.userName?.charAt(0) }}
+        </a-avatar>
+        <span class="opponent-name">{{ opponent?.userName }}</span>
+      </div>
+    </div>
     <a-row :gutter="[24, 24]">
       <a-col :md="8" :xs="24">
         <a-tabs default-active-key="1">
@@ -138,10 +152,27 @@ import CodeEditor from "@/components/CodeEditor.vue";
 import MdViewer from "@/components/MdViewer.vue";
 import CommentItem from "@/components/CommentItem.vue";
 import { IconPlayArrow } from "@arco-design/web-vue/es/icon";
+import { useRoute, useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 interface Props {
   id: string;
 }
+
+const route = useRoute();
+const router = useRouter();
+const store = useStore();
+
+// 检查是否是匹配模式
+const isBattleMode = computed(() => {
+  return route.query.matchMode === "true";
+});
+
+// 获取对手信息
+const opponent = computed(() => store.state.match.opponent);
+
+// 对战状态
+const battleStatus = computed(() => store.state.match.matchStatus);
 
 // 评论相关类型定义
 interface Reply {
@@ -207,29 +238,37 @@ const codeTemplates = {
 
 const form = ref<QuestionSubmitAddRequest>({
   language: "java",
-  code: codeTemplates.java,
+  code: "",
   questionId: props.id as any,
 });
 
 const onEditChange = (v: string) => {
   form.value.code = v;
 };
-
-// 监听语言变化，自动切换代码模板
-const onLanguageChange = () => {
-  const template =
-    codeTemplates[form.value.language as keyof typeof codeTemplates];
-  if (template) {
-    form.value.code = template;
-  }
-};
-
 const doSubmit = async () => {
   console.log("提交的代码：", form.value);
   const res = await QuestionControllerService.doSubmitUsingPost(form.value);
   console.log("res:", res);
   if (res.code === 0) {
     message.success("提交成功");
+    // 如果是对战模式并且提交成功 - 模拟判断为AC (实际项目中需要根据后端判题结果)
+    if (isBattleMode.value && res.data) {
+      // 模拟判断是否AC (判题通过)
+      const isAccepted = true; // 模拟AC
+      if (isAccepted) {
+        // 创建胜利结果
+        const result = {
+          winner: store.state.user?.loginUser?.userName,
+          time: Date.now() - new Date().getTimezoneOffset() * 60000, // 模拟用时
+        };
+        // 更新比赛结果
+        await store.dispatch("match/endBattle", result);
+        // 跳转到结果页面
+        setTimeout(() => {
+          router.push("/match/result");
+        }, 1500);
+      }
+    }
   } else {
     message.error("提交失败，" + res.message);
   }
@@ -417,6 +456,44 @@ const handleReplyLike = (commentId: number, replyId: number) => {
 <style scoped>
 #viewQuestionView .arco-space-horizontal .arco-space-item {
   margin-bottom: 0 !important;
+}
+
+/* 对战模式指示器样式 */
+.battle-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background-color: #f2f3f5;
+  border: 1px solid #e5e6eb;
+}
+
+.battle-status {
+  display: flex;
+  align-items: center;
+  color: #165dff;
+  font-weight: bold;
+}
+
+.battle-text {
+  margin-left: 6px;
+}
+
+.battle-opponent {
+  display: flex;
+  align-items: center;
+}
+
+.vs-text {
+  margin-right: 12px;
+  font-weight: bold;
+  color: #86909c;
+}
+
+.opponent-name {
+  font-weight: 500;
 }
 
 /* 评论区样式 */

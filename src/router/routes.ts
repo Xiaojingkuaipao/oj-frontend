@@ -14,8 +14,38 @@ import AddInterfaceView from "@/views/interface/AddInterfaceView.vue";
 import AccessEnum from "@/access/accessEnum";
 import UserLayout from "../layouts/UserLayout.vue";
 import InterView from "@/views/interview/InterView.vue";
+import MatchWaitingView from "@/views/match/MatchWaitingView.vue";
+import MatchResultView from "@/views/match/MatchResultView.vue";
+import BattleView from "@/views/match/BattleView.vue";
 
 export const routes: Array<RouteRecordRaw> = [
+  {
+    path: "/match/waiting",
+    name: "匹配等待",
+    component: MatchWaitingView,
+    meta: {
+      access: AccessEnum.USER,
+      hideInMenu: true,
+    },
+  },
+  {
+    path: "/match/result",
+    name: "匹配结果",
+    component: MatchResultView,
+    meta: {
+      access: AccessEnum.USER,
+      hideInMenu: true,
+    },
+  },
+  {
+    path: "/match/battle/:id?",
+    name: "对战页面",
+    component: BattleView,
+    meta: {
+      access: AccessEnum.USER,
+      hideInMenu: true,
+    },
+  },
   {
     path: "/user",
     name: "用户相关",

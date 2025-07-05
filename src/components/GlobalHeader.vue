@@ -32,6 +32,17 @@
           </a-menu-item>
         </a-menu>
       </a-col>
+      <a-col flex="110px">
+        <a-button
+          type="primary"
+          status="blue"
+          @click="handleStartMatch"
+          :loading="matchStatus === 'matching'"
+          style="margin-right: 20px"
+        >
+          1v1对战
+        </a-button>
+      </a-col>
       <a-col flex="150px">
         <a-dropdown-button>
           {{ displayUserName }}
@@ -98,6 +109,21 @@ const isLoggedIn = computed(() => {
 const displayUserName = computed(() => {
   return isLoggedIn.value ? store.state.user?.loginUser?.userName : "未登录";
 });
+
+// 匹配状态
+const matchStatus = computed(() => store.state.match?.matchStatus);
+
+// 处理开始匹配
+const handleStartMatch = () => {
+  // 检查用户是否已登录
+  if (!isLoggedIn.value) {
+    message.error("请先登录再进行匹配");
+    router.push("/user/login");
+    return;
+  }
+  // 跳转到匹配等待页面
+  router.push("/match/waiting");
+};
 
 //展示在菜单的路由
 const visibleRoutes = computed(() => {
