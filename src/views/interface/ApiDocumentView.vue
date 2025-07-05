@@ -103,6 +103,7 @@ const loadData = async () => {
   const res = await InterfaceControllerService.getInterfaceInfoVoByIdUsingGet(
     props.id as any
   );
+  console.log("API Document:", res);
   if (res.code == 0) {
     interfaceInfoInfo.value = res.data;
   } else {

@@ -25,6 +25,7 @@
           >登陆
         </a-button>
       </a-form-item>
+      <div>没有账号？<a-link @click="goToRegister">立即注册</a-link></div>
     </a-form>
   </div>
 </template>
@@ -46,6 +47,10 @@ const form: UserLoginRequest = reactive({
 
 const store = useStore();
 const router = useRouter();
+
+const goToRegister = () => {
+  router.push("/user/register");
+};
 
 const handleSubmit = async () => {
   const res = await UserControllerService.userLoginUsingPost(form);

@@ -238,23 +238,13 @@ const codeTemplates = {
 
 const form = ref<QuestionSubmitAddRequest>({
   language: "java",
-  code: codeTemplates.java,
+  code: "",
   questionId: props.id as any,
 });
 
 const onEditChange = (v: string) => {
   form.value.code = v;
 };
-
-// 监听语言变化，自动切换代码模板
-const onLanguageChange = () => {
-  const template =
-    codeTemplates[form.value.language as keyof typeof codeTemplates];
-  if (template) {
-    form.value.code = template;
-  }
-};
-
 const doSubmit = async () => {
   console.log("提交的代码：", form.value);
   const res = await QuestionControllerService.doSubmitUsingPost(form.value);
